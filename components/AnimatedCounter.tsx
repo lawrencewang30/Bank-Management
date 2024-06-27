@@ -11,7 +11,6 @@ const AnimatedCounter = ({ amount } : { amount: number }) => {
         prefix='$'
         end={amount} />
     </div>
-    // replaced div with span to fix nested <div> inside a <p> tag hydration error
   )
 }
 
