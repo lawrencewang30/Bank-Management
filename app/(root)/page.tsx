@@ -1,10 +1,11 @@
 import React from 'react' // root is route group i.e. (root) so no need to include 'root' in link
 import HeaderBox from '@/components/HeaderBox'
 import TotalBalanceBox from '@/components/TotalBalanceBox';
+import RightSideBar from '@/components/RightSideBar';
 // classNames from globals.css
 
 const HomePage = () => {
-  const loggedIn = { firstName: 'Lawrence' };
+  const loggedIn = { firstName: 'Lawrence', lastName: 'Wang', email: 'jiabin2003@gmail.com' };
 
   return (
     <section className="home">
@@ -23,7 +24,15 @@ const HomePage = () => {
             totalCurrentBalance={1500.75}
           />
         </header>
+
+        RECENT TRANSACTIONS
       </div>
+
+      <RightSideBar 
+        user={loggedIn}
+        transactions={[]}
+        banks={[{}, {}]}
+      />
     </section>
   )
 }
