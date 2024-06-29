@@ -14,8 +14,12 @@ export default function RootLayout({ // root is route group i.e. (root) so no ne
 
           <div className="flex size-full flex-col">
             <div className="root-layout">
-              <Image src="/icons/logo.svg" width={30}
-              height={30} alt="lpgo" />
+              <Image 
+                src="/icons/logo.svg" 
+                width={30}
+                height={30}
+                alt="l0go"
+              />
               <div>
                 <MobileNavBar user={loggedIn} />
               </div>

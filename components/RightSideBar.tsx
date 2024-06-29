@@ -10,7 +10,7 @@ const RightSideBar = ({ user, transactions, banks }: RightSidebarProps) => {
             <div className='profile-banner' />
             <div className='profile'>
                 <div className='profile-img' >
-                    <span className='text-4xl font-bold text-blue-500'>{user.firstName[0]}</span>
+                    <span className='text-5xl font-bold text-blue-500'>{user.firstName[0]}</span>
                 </div>
 
                 <div className='profile-details'>
@@ -53,10 +53,10 @@ const RightSideBar = ({ user, transactions, banks }: RightSidebarProps) => {
                     {banks[1] && (
                         <div className='absolute right-0 top-8 z-0 w-[90%]'>
                             <BankCard 
-                             key={banks[1].$id}
-                             account={banks[1]}
-                             userName={`${user.firstName} ${user.lastName}`}
-                             showBalance={false}/> 
+                              key={banks[1].$id}
+                              account={banks[1]}
+                              userName={`${user.firstName} ${user.lastName}`}
+                              showBalance={false}/> 
                         </div>
                     )}
                 </div>
