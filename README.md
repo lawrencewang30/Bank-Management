@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, clone the repository via ssh key or http
+First, clone the repository using `SSH` or `HTTP`
 
 Second, run the development server:
 
