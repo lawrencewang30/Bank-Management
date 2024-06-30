@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /* eslint-disable no-prototype-builtins */
 import { type ClassValue, clsx } from "clsx";
 import qs from "query-string";
@@ -193,3 +195,8 @@ export const getTransactionStatus = (date: Date) => {
 
   return date > twoDaysAgo ? "Processing" : "Success";
 };
+
+export const authFormSchema = z.object({
+  email: z.string().email(), // makes input pop "invalid email" message until correct email header used
+  password: z.string().min(8)
+})

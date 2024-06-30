@@ -39,10 +39,7 @@ const MobileNavBar = ({ user }: MobileNavProps) => {
                 height={34}
                 alt="Prestige logo"
               />
-              <h1 className="text-26
-              font-ibm-plex-serif
-              font-bold
-              text-black-1">Prestige</h1>{/* show Prestige title next to logo after accessing 3 lines option*/}
+              <h1 className="text-26 font-ibm-plex-serif font-bold text-black-1">Prestige</h1>{/* show Prestige title next to logo after accessing 3 lines option*/}
           </Link>
           <div className="mobilenav-sheet">
             <SheetClose asChild>
