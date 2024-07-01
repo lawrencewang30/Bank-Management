@@ -7,9 +7,11 @@ import { Control } from 'react-hook-form'
 import { z } from 'zod'
 import { authFormSchema } from '@/lib/utils'
 
+const formSchema = authFormSchema('sign-up')
+
 interface CustomInput {
-    control: Control<z.infer<typeof authFormSchema>>,
-    name: FieldPath<z.infer<typeof authFormSchema>>, // looks at authFormScheme to check if property in function
+    control: Control<z.infer<typeof formSchema>>,
+    name: FieldPath<z.infer<typeof formSchema>>, // looks at authFormScheme to check if property in function
     label: string,
     placeholder: string
 }
