@@ -23,8 +23,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { authFormSchema } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
-import SignInPage from '@/app/(auth)/sign-in/page';
 import { useRouter } from 'next/navigation';
+import { signIn, signUp } from '@/lib/actions/user.actions';
 
 
 const AuthorizationForm = ({ type }: {type: string }) => {
@@ -44,22 +44,21 @@ const AuthorizationForm = ({ type }: {type: string }) => {
   })
         
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     setIsLoading(true);
 
     try {
       // Sign up with Appwrite and create Plaid token
-      // TODO: fetch data inputted from sign-in and sign-up forms 
-      // for Server Actions and Mutations (Next.js)
-      if (type === 'sign-up') {
-        /* const newUser = await signUp(data);
 
-        setUser(newUser); */
+      if (type === 'sign-up') {
+        const newUser = await signUp(data);
+
+        setUser(newUser);
       }
       if (type === 'sign-in') {
-        /* const response = await SignInPage({
+        /* const response = await signIn({
           email: data.email,
           password: data.password
         })
@@ -90,7 +89,7 @@ const AuthorizationForm = ({ type }: {type: string }) => {
 
           <div className='flex flex-col gap-1 md:gap-3'>
             <h1 className='text-24 lg:text-36 font-semibold text-gray-800 pt-8'>
-                {user
+                {user // this page is accessed after successfully create account since signup function in user.actions.ts
                   ? 'Link Account' // if already have a user
                   : type === 'sign-in' // else check type
                     ? 'Sign In' // if type == sign-in: Sign In
@@ -124,7 +123,7 @@ const AuthorizationForm = ({ type }: {type: string }) => {
                     />
                   </div>
                   <CustomInput
-                    control={form.control} name='address' label='Address' placeholder='Enter your specific address'
+                    control={form.control} name='address1' label='Address' placeholder='Enter your specific address'
                   />
                   <CustomInput 
                     control={form.control} name='city' label='City' placeholder='Enter your city'  
