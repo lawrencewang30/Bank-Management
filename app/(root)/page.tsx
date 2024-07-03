@@ -2,10 +2,11 @@ import React from 'react' // root is route group i.e. (root) so no need to inclu
 import HeaderBox from '@/components/HeaderBox'
 import TotalBalanceBox from '@/components/TotalBalanceBox';
 import RightSideBar from '@/components/RightSideBar';
+import { getLoggedInUser } from '@/lib/actions/user.actions';
 // classNames from globals.css
 
-const HomePage = () => {
-  const loggedIn = { firstName: 'Lawrence', lastName: 'Wang', email: 'jiabin2003@gmail.com' };
+const HomePage = async () => {
+  const loggedIn = await getLoggedInUser();
 
   return (
     <section className="home">
@@ -15,7 +16,7 @@ const HomePage = () => {
             type="greeting"
             title="Welcome"
             subtext="Access your account and manage your transactions efficiently"
-            user={loggedIn?.firstName || 'Guest'}
+            user={loggedIn?.name || 'Guest'} // dynamically assign name based on account
           />
 
           <TotalBalanceBox 

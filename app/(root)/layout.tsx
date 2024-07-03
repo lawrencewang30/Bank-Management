@@ -1,13 +1,19 @@
 import MobileNavBar from "@/components/MobileNavBar";
 import SideBar from "@/components/SideBar";
+import { getLoggedInUser } from "@/lib/actions/user.actions";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
-export default function RootLayout({ // root is route group i.e. (root) so no need to include 'root' in link
+export default async function RootLayout({ // root is route group i.e. (root) so no need to include 'root' in link
     children,
   }: Readonly<{
     children: React.ReactNode;
   }>) {
-    const loggedIn = { firstName: "Lawrence", lastName: "Wang" };
+    const loggedIn = await getLoggedInUser();
+
+    if (!loggedIn) {
+      redirect('/sign-in');
+    }
     return (
       <main className="flex h-screen w-full font-inter">
           <SideBar user={loggedIn}/>
@@ -18,7 +24,7 @@ export default function RootLayout({ // root is route group i.e. (root) so no ne
                 src="/icons/logo.svg" 
                 width={30}
                 height={30}
-                alt="l0go"
+                alt="logo"
               />
               <div>
                 <MobileNavBar user={loggedIn} />
