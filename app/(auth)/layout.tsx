@@ -7,7 +7,6 @@ export default function RootLayout({ // auth is route group i.e. (auth) so no ne
 }>) {
   return (
     <main className="flex min-h-screen w-full justify-between font-inter">
-      {children} {/* no sidebar component unlike layout.tsx in root, children contain sign-in or sign-up layout depending on link*/}
       <div className="auth-asset">
         <div>
           <Image 
@@ -17,6 +16,7 @@ export default function RootLayout({ // auth is route group i.e. (auth) so no ne
             height={600} />
         </div>
       </div>
+      {children} {/* no sidebar component unlike layout.tsx in root, children contain sign-in or sign-up layout depending on link*/}
     </main>
   );
 }
