@@ -25,6 +25,7 @@ import { authFormSchema } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { signIn, signUp, getLoggedInUser } from '@/lib/actions/user.actions';
+import PlaidLink from './PlaidLink';
 
 const AuthorizationForm = ({ type }: {type: string }) => {
   const router = useRouter();
@@ -53,7 +54,20 @@ const AuthorizationForm = ({ type }: {type: string }) => {
       // Sign up with Appwrite and create Plaid token
 
       if (type === 'sign-up') {
-        const newUser = await signUp(data);
+        const userData = {
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName!,
+          lastName: data.lastName!,
+          address: data.address!,
+          postalCode: data.postalCode!,
+          dateOfBirth: data.dateOfBirth!,
+          ssn: data.ssn!,
+          city: data.city!,
+          state: data.state!
+        }
+
+        const newUser = await signUp(userData);
 
         setUser(newUser);
       }
@@ -104,11 +118,11 @@ const AuthorizationForm = ({ type }: {type: string }) => {
             </h1>
           </div>
       </header>
-      { user ? ( // if user already authenticated
+      {/* user ? ( */}
         <div className='flex flex-col gap-4'>
-            {/* PlaidLink  to link bank account*/}
+            <PlaidLink user={user} variant="primary"/>
         </div>
-      ): ( // else:
+      {/* ): ( (*/}
         <>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -179,7 +193,7 @@ const AuthorizationForm = ({ type }: {type: string }) => {
             </Link>
           </footer>
         </>
-      )}
+      {/* }) */}
     </section>
   )
 }
