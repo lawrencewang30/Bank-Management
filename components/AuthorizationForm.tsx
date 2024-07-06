@@ -59,7 +59,7 @@ const AuthorizationForm = ({ type }: {type: string }) => {
           password: data.password,
           firstName: data.firstName!,
           lastName: data.lastName!,
-          address: data.address!,
+          address1: data.address1!,
           postalCode: data.postalCode!,
           dateOfBirth: data.dateOfBirth!,
           ssn: data.ssn!,
@@ -118,11 +118,11 @@ const AuthorizationForm = ({ type }: {type: string }) => {
             </h1>
           </div>
       </header>
-      {/* user ? ( */}
+      {user ? ( // only after all fields are completed "Connect Bank" option will show up
         <div className='flex flex-col gap-4'>
             <PlaidLink user={user} variant="primary"/>
         </div>
-      {/* ): ( (*/}
+      ): (
         <>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -137,7 +137,7 @@ const AuthorizationForm = ({ type }: {type: string }) => {
                     />
                   </div>
                   <CustomInput
-                    control={form.control} name='address' label='Address' placeholder='Enter your specific address'
+                    control={form.control} name='address1' label='Address' placeholder='Enter your specific address'
                   />
                   <CustomInput 
                     control={form.control} name='city' label='City' placeholder='Enter your city'  
@@ -152,7 +152,7 @@ const AuthorizationForm = ({ type }: {type: string }) => {
                   </div>
                   <div className='flex gap-5'>
                     <CustomInput
-                      control={form.control} name='dateOfBirth' label='Date of Birth' placeholder='mm-dd-yyyy'
+                      control={form.control} name='dateOfBirth' label='Date of Birth' placeholder='YYYY-MM-DD'
                     />
                     <CustomInput
                       control={form.control} name='ssn' label='SSN' placeholder='ex: 1234'
@@ -193,7 +193,7 @@ const AuthorizationForm = ({ type }: {type: string }) => {
             </Link>
           </footer>
         </>
-      {/* }) */}
+      )}
     </section>
   )
 }

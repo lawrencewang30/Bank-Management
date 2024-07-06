@@ -57,11 +57,15 @@ export const createDwollaCustomer = async (
   newCustomer: NewDwollaCustomerParams
 ) => {
   try {
-    return await dwollaClient
-      .post("customers", newCustomer)
-      .then((res) => res.headers.get("location"));
+    const res = await dwollaClient.post("customers", newCustomer);
+    const location = res.headers.get("location");
+    if (!location) {
+      throw new Error("Dwolla API did not return a customer URL");
+    }
+    return location;
   } catch (err) {
     console.error("Creating a Dwolla Customer Failed: ", err);
+    throw err; // Rethrow the error
   }
 };
 
