@@ -2,17 +2,20 @@ import { formatAmount } from '@/lib/utils'
 import Link from 'next/link'
 import React from 'react'
 import Image from 'next/image'
+import Copy from './Copy'
 
-const BankCard = ({ account, userName, showBalance = true }: CreditCardProps) => { // showBalance currently default to true, may change
+const BankCard = ({ account, userName, showBalance = true }: CreditCardProps) => {
+  console.log(account);
+
   return (
     <div className='flex flex-col'>
-      <Link href="/" className='bank-card'>
+      <Link href={`/transaction-history?id=${account.appwriteItemId}`} className='bank-card'>
         <div className='bank-card_content'>
           <div>
             <h1 className='text-16 font-semibold text-white'>
-              {userName}
+              {account.name}
             </h1>
-            <p className='font-ibm=plex-serif font black text-white'>
+            <p className='font-ibm-plex-serif font-black text-white'>
               {formatAmount(account.currentBalance)}
             </p>
           </div>
@@ -26,8 +29,8 @@ const BankCard = ({ account, userName, showBalance = true }: CreditCardProps) =>
               ●● / ●●
               </h2>
             </div>
-            <p className='text-14 font-semibold tracking-[1.3px] text-white'>
-            ●●●● ●●●● ●●●● <span className='text-18'>1234</span>
+            <p className='text-[13px] font-semibold tracking-[1.3px] text-white'>
+            ●●●● ●●●● ●●●● <span className='text-18'>{account?.mask}</span>
             </p>
           </article>
         </div>
@@ -36,13 +39,13 @@ const BankCard = ({ account, userName, showBalance = true }: CreditCardProps) =>
           <Image 
             src="/icons/Paypass.svg"
             width={25}
-            height={20}
+            height={30}
             alt="pay"
           />
           <Image 
             src="/icons/mastercard.svg"
-            width={43}
-            height={40}
+            width={40}
+            height={45}
             alt="mastercard"
             className='ml-3'
           />
@@ -55,6 +58,8 @@ const BankCard = ({ account, userName, showBalance = true }: CreditCardProps) =>
           className='absolute top-0 left-0'
         />
       </Link>
+
+      {showBalance && <Copy title={account?.shareableId}/>}
     </div>
   )
 }

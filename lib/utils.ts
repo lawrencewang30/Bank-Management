@@ -193,6 +193,7 @@ export const getTransactionStatus = (date: Date) => {
   const twoDaysAgo = new Date(today);
   twoDaysAgo.setDate(today.getDate() - 2);
 
+  // use 2 days as sample for sandbox data, can alter for production
   return date > twoDaysAgo ? "Processing" : "Success";
 };
 

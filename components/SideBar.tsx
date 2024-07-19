@@ -6,6 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Footer from "./Footer";
+import PlaidLink from "./PlaidLink";
 
 const SideBar = ({ user }: SiderbarProps) => {
     const pathname = usePathname();
@@ -30,7 +31,7 @@ const SideBar = ({ user }: SiderbarProps) => {
             return (
               <Link href={item.route} key={item.label}
                 className={cn
-                ("sidebar-link", {'bg-bank-gradient': isActive })} // create blue outline on sidebar icon of current page
+                ("sidebar-link", {'bg-bank-gradient': isActive })} // create blue outline on sidebar icon of current page, routes for each sidebar option can be found in index.ts
               >
                 <div className="relative size-6">
                     <Image 
@@ -51,7 +52,7 @@ const SideBar = ({ user }: SiderbarProps) => {
             )
         })}
 
-        USER
+        <PlaidLink user={user}/>
       </nav>
 
       <Footer user={user} />

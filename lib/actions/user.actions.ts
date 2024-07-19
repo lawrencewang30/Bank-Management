@@ -15,13 +15,39 @@ const {
   APPWRITE_BANK_COLLECTION_ID: BANK_COLLECTION_ID
 } = process.env;
 
+export const getUserInfo = async ({ userId }: getUserInfoProps) => {
+  try {
+    const { database } = await createAdminClient();
+
+    // ensure function gets bank associated with user (database query in appwrite)
+    const user = await database.listDocuments(
+      DATABASE_ID!,
+      USER_COLLECTION_ID!,
+      [Query.equal('userId', [userId])]
+    )
+
+    return parseStringify(user.documents[0]);
+  } catch (error) {
+    console.log(error);
+  }
+} 
+
 export const signIn = async({ email, password }: signInProps) => {
     try {
       const { account } = await createAdminClient();
 
-      const response = await account.createEmailPasswordSession(email, password);
+      const session = await account.createEmailPasswordSession(email, password);
 
-      return parseStringify(response);
+      cookies().set("appwrite-session", session.secret, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "strict",
+        secure: true,
+      });
+
+      const user = await getUserInfo({ userId: session.userId })
+
+      return parseStringify(user);
     } catch(error) {
         console.error('Error', error);
     }
@@ -65,6 +91,7 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
         }
       )
 
+      // IMPORTANT because without this session app will automatically log user out
       const session = await account.createEmailPasswordSession(email, password);
 
       cookies().set("appwrite-session", session.secret, {
@@ -84,7 +111,9 @@ export async function getLoggedInUser() {
     try {
       const { account } = await createSessionClient();
       
-      const user = await account.get();
+      const result = await account.get();
+
+      const user = await getUserInfo({ userId: result.$id});
       
       return parseStringify(user)
     } catch (error) {
@@ -92,131 +121,186 @@ export async function getLoggedInUser() {
     }
   }
 
-  export const logoutAccount = async () => {
-    try {
-      const { account } = await createSessionClient();
+export const logoutAccount = async () => {
+  try {
+    const { account } = await createSessionClient();
 
-      cookies().delete('appwrite-session');
+    cookies().delete('appwrite-session');
 
-      await account.deleteSession('current');
-    } catch (error) {
-      return null;
-    }
+    await account.deleteSession('current');
+  } catch (error) {
+    return null;
   }
+}
 
-  export const createLinkToken = async (user: User) => {
-    try {
-      const tokenParams = {
-        user: {
-          client_user_id: user.$id
-        },
-        client_name: `${user.firstName} ${user.lastName}`, // database user has firstName and lastName attribute, not name attribute
-        products: ['auth'] as Products[],
-        language: 'en',
-        country_codes: ["US"] as CountryCode[],
-      }
-
-      const response = await plaidClient.linkTokenCreate(tokenParams);
-
-      return parseStringify({ linkToken: response.data.link_token });
-
-    } catch (error) {
-      console.log(error);
+export const createLinkToken = async (user: User) => {
+  try {
+    const tokenParams = {
+      user: {
+        client_user_id: user.$id
+      },
+      client_name: `${user.firstName} ${user.lastName}`, // database user has firstName and lastName attribute, not name attribute
+      products: ['auth'] as Products[],
+      language: 'en',
+      country_codes: ["US"] as CountryCode[],
     }
+
+    const response = await plaidClient.linkTokenCreate(tokenParams);
+
+    return parseStringify({ linkToken: response.data.link_token });
+
+  } catch (error) {
+    console.log(error);
   }
+}
 
-  export const createBankAccount = async({
-    userId, // reference to user account
-    bankId,
-    accountId,
-    accessToken,
-    fundingSourceUrl,
-    shareableId
-  }: createBankAccountProps) => {
-    try { // create document within database in appwrite
-      const { database } = await createAdminClient();
+export const createBankAccount = async({
+  userId, // reference to user account
+  bankId,
+  accountId,
+  accessToken,
+  fundingSourceUrl,
+  shareableId
+}: createBankAccountProps) => {
+  try { // create document within database in appwrite
+    const { database } = await createAdminClient();
 
-      const bankAccount = await database.createDocument(
-        DATABASE_ID!,
-        BANK_COLLECTION_ID!,
-        ID.unique(),
-        {
-          userId,
-          bankId,
-          accountId,
-          accessToken,
-          fundingSourceUrl,
-          shareableId
-        }
-      )
-
-      return parseStringify(bankAccount);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  export const exchangePublicToken = async ({
-    publicToken,
-    user,
-  }: exchangePublicTokenProps) => {
-    try {
-      // (Step 5 in Figma flow chart): Exchange public token for access token and item ID
-      const response = await plaidClient.itemPublicTokenExchange({
-        public_token: publicToken
-      });
-
-      const accessToken = response.data.access_token;
-      const itemId = response.data.item_id;
-
-      // (Step 6 in Figma flow chart): Get account information from Plaid using access token
-      const accountResponse = await plaidClient.accountsGet({
-        access_token: accessToken
-      });
-
-      const accountData = accountResponse.data.accounts[0];
-
-      // (Step 7 in Figma flow chart): Create a processor token for Dwolla using access token and account ID
-      const request: ProcessorTokenCreateRequest = {
-        access_token: accessToken,
-        account_id: accountData.account_id,
-        processor: "dwolla" as ProcessorTokenCreateRequestProcessorEnum
-      };
-
-      const processorTokenResponse = await plaidClient.processorTokenCreate(request);
-      const processorToken = processorTokenResponse.data.processor_token;
-
-      // Create funding source URL for account using Dwolla customer ID, processor token, and bank name
-      const fundingSourceUrl = await addFundingSource({
-        dwollaCustomerId: user.dwollaCustomerId,
-        processorToken,
-        bankName: accountData.name
-      });
-
-      // if funding source URL not created, throw error
-      if (!fundingSourceUrl) {
-        throw Error;
-      }
-
-      // Create bank account using the user ID, item ID, account ID, access token, funding source URL, and sharable ID
-      await createBankAccount({
-        userId: user.$id,
-        bankId: itemId,
-        accountId: accountData.account_id,
+    const bankAccount = await database.createDocument(
+      DATABASE_ID!,
+      BANK_COLLECTION_ID!,
+      ID.unique(),
+      {
+        userId,
+        bankId,
+        accountId,
         accessToken,
         fundingSourceUrl,
-        shareableId: encryptId(accountData.account_id)
-      });
+        shareableId
+      }
+    )
 
-      // Revalidate path to reflect the changes
-      revalidatePath("/");
-
-      // Return success message
-      return parseStringify({
-        publicTokenExchange: "complete"
-      });
-    } catch(error) {
-      console.error("An error occurred while creating exchanging token:", error);
-    }
+    return parseStringify(bankAccount);
+  } catch (error) {
+    console.log(error);
   }
+}
+
+export const exchangePublicToken = async ({
+  publicToken,
+  user,
+}: exchangePublicTokenProps) => {
+  try {
+    // (Step 5 in Figma flow chart): Exchange public token for access token and item ID
+    const response = await plaidClient.itemPublicTokenExchange({
+      public_token: publicToken
+    });
+
+    const accessToken = response.data.access_token;
+    const itemId = response.data.item_id;
+
+    // (Step 6 in Figma flow chart): Get account information from Plaid using access token
+    const accountResponse = await plaidClient.accountsGet({
+      access_token: accessToken
+    });
+
+    const accountData = accountResponse.data.accounts[0];
+
+    // (Step 7 in Figma flow chart): Create a processor token for Dwolla using access token and account ID
+    const request: ProcessorTokenCreateRequest = {
+      access_token: accessToken,
+      account_id: accountData.account_id,
+      processor: "dwolla" as ProcessorTokenCreateRequestProcessorEnum
+    };
+
+    const processorTokenResponse = await plaidClient.processorTokenCreate(request);
+    const processorToken = processorTokenResponse.data.processor_token;
+
+    // Create funding source URL for account using Dwolla customer ID, processor token, and bank name
+    const fundingSourceUrl = await addFundingSource({
+      dwollaCustomerId: user.dwollaCustomerId,
+      processorToken,
+      bankName: accountData.name
+    });
+
+    // if funding source URL not created, throw error
+    if (!fundingSourceUrl) {
+      throw Error;
+    }
+
+    // Create bank account using the user ID, item ID, account ID, access token, funding source URL, and sharable ID
+    await createBankAccount({
+      userId: user.$id,
+      bankId: itemId,
+      accountId: accountData.account_id,
+      accessToken,
+      fundingSourceUrl,
+      shareableId: encryptId(accountData.account_id)
+    });
+
+    // Revalidate path to reflect the changes
+    revalidatePath("/");
+
+    // Return success message
+    return parseStringify({
+      publicTokenExchange: "complete"
+    });
+  } catch(error) {
+    console.error("An error occurred while creating exchanging token:", error);
+  }
+}
+
+export const getBanks = async ({ userId }: getBanksProps) => {
+  try {
+    const { database } = await createAdminClient();
+
+    // ensure function gets banks associated with user (database query in appwrite)
+    const banks = await database.listDocuments(
+      DATABASE_ID!,
+      BANK_COLLECTION_ID!,
+      [Query.equal('userId', [userId])]
+    )
+
+    return parseStringify(banks.documents);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const getBank = async ({ documentId }: getBankProps) => {
+  try {
+    const { database } = await createAdminClient();
+
+    // ensure function gets bank associated with user (database query in appwrite)
+    const bank = await database.listDocuments(
+      DATABASE_ID!,
+      BANK_COLLECTION_ID!,
+      [Query.equal('$id', [documentId])]
+    )
+
+    return parseStringify(bank.documents[0]);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const getBankByAccountId = async ({ accountId }: getBankByAccountIdProps) => {
+  try {
+    const { database } = await createAdminClient();
+
+    // ensure function gets bank associated with user (database query in appwrite)
+    const bank = await database.listDocuments(
+      DATABASE_ID!,
+      BANK_COLLECTION_ID!,
+      [Query.equal('accountId', [accountId])]
+    )
+
+    if (bank.total !== 1) {
+      return null; // if bank does not exist
+    }
+
+    return parseStringify(bank.documents[0]);
+  } catch (error) {
+    console.log(error);
+  }
+}
   
